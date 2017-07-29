@@ -6,10 +6,10 @@
 namespace PHPMQ\Protocol\Exceptions;
 
 /**
- * Class RuntimeException
+ * Class PacketCountMismatchException
  * @package PHPMQ\Protocol\Exceptions
  */
-class RuntimeException extends \RuntimeException
+final class PacketCountMismatchException extends LogicException
 {
 
 }
