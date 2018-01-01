@@ -29,13 +29,17 @@ final class MessageClientToServer implements ProvidesMessageData
 	/** @var string */
 	private $content;
 
+	/** @var int */
+	private $ttl;
+
 	/** @var IdentifiesMessageType */
 	private $messageType;
 
-	public function __construct( IdentifiesQueue $queueName, string $content )
+	public function __construct( IdentifiesQueue $queueName, string $content, int $ttl = 0 )
 	{
 		$this->queueName   = $queueName;
 		$this->content     = $content;
+		$this->ttl         = $ttl;
 		$this->messageType = new MessageType( MessageType::MESSAGE_CLIENT_TO_SERVER );
 	}
 
@@ -54,16 +58,24 @@ final class MessageClientToServer implements ProvidesMessageData
 		return $this->content;
 	}
 
+	public function getTTL() : int
+	{
+		return $this->ttl;
+	}
+
 	public function toString() : string
 	{
 		$messageHeader       = new MessageHeader( ProtocolVersion::VERSION_1, $this->messageType );
-		$queuePacketHeader   = new PacketHeader( PacketType::QUEUE_NAME, strlen( (string)$this->queueName ) );
-		$contentPacketHeader = new PacketHeader( PacketType::MESSAGE_CONTENT, strlen( $this->content ) );
+		$queuePacketHeader   = new PacketHeader( PacketType::QUEUE_NAME, \strlen( $this->queueName->toString() ) );
+		$contentPacketHeader = new PacketHeader( PacketType::MESSAGE_CONTENT, \strlen( $this->content ) );
+		$ttlPacketHeader     = new PacketHeader( PacketType::TTL, \strlen( (string)$this->ttl ) );
 
-		return $messageHeader
-		       . $queuePacketHeader
-		       . $this->queueName
-		       . $contentPacketHeader
-		       . $this->content;
+		return $messageHeader->toString()
+			   . $queuePacketHeader->toString()
+			   . $this->queueName->toString()
+			   . $contentPacketHeader->toString()
+			   . $this->content
+			   . $ttlPacketHeader->toString()
+			   . $this->ttl;
 	}
 }

@@ -57,16 +57,16 @@ final class ConsumeRequest implements ProvidesMessageData
 	public function toString() : string
 	{
 		$messageHeader            = new MessageHeader( ProtocolVersion::VERSION_1, $this->messageType );
-		$queuePacketHeader        = new PacketHeader( PacketType::QUEUE_NAME, strlen( (string)$this->queueName ) );
+		$queuePacketHeader        = new PacketHeader( PacketType::QUEUE_NAME, \strlen( $this->queueName->toString() ) );
 		$messageCountPacketHeader = new PacketHeader(
 			PacketType::MESSAGE_CONSUME_COUNT,
-			strlen( (string)$this->messageCount )
+			\strlen( (string)$this->messageCount )
 		);
 
-		return $messageHeader
-		       . $queuePacketHeader
-		       . $this->queueName
-		       . $messageCountPacketHeader
-		       . $this->messageCount;
+		return $messageHeader->toString()
+			   . $queuePacketHeader->toString()
+			   . $this->queueName->toString()
+			   . $messageCountPacketHeader->toString()
+			   . $this->messageCount;
 	}
 }

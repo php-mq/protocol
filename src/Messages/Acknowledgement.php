@@ -58,13 +58,13 @@ final class Acknowledgement implements ProvidesMessageData
 	public function toString() : string
 	{
 		$messageHeader         = new MessageHeader( ProtocolVersion::VERSION_1, $this->messageType );
-		$queuePacketHeader     = new PacketHeader( PacketType::QUEUE_NAME, strlen( (string)$this->queueName ) );
-		$messageIdPacketHeader = new PacketHeader( PacketType::MESSAGE_ID, strlen( (string)$this->messageId ) );
+		$queuePacketHeader     = new PacketHeader( PacketType::QUEUE_NAME, \strlen( $this->queueName->toString() ) );
+		$messageIdPacketHeader = new PacketHeader( PacketType::MESSAGE_ID, \strlen( $this->messageId->toString() ) );
 
-		return $messageHeader
-		       . $queuePacketHeader
-		       . $this->queueName
-		       . $messageIdPacketHeader
-		       . $this->messageId;
+		return $messageHeader->toString()
+			   . $queuePacketHeader->toString()
+			   . $this->queueName->toString()
+			   . $messageIdPacketHeader->toString()
+			   . $this->messageId->toString();
 	}
 }

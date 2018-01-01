@@ -63,8 +63,8 @@ final class DeadLetter implements ProvidesMessageData
 
 		return $messageHeader->toString()
 			   . $queuePacketHeader->toString()
-			   . $this->queueName
+			   . $this->queueName->toString()
 			   . $messageIdPacketHeader->toString()
-			   . $this->messageId;
+			   . $this->messageId->toString();
 	}
 }

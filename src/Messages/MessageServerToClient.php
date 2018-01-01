@@ -33,14 +33,18 @@ final class MessageServerToClient implements ProvidesMessageData
 	/** @var string */
 	private $content;
 
+	/** @var int */
+	private $ttl;
+
 	/** @var IdentifiesMessageType */
 	private $messageType;
 
-	public function __construct( IdentifiesMessage $messageId, IdentifiesQueue $queueName, string $content )
+	public function __construct( IdentifiesMessage $messageId, IdentifiesQueue $queueName, string $content, int $ttl )
 	{
 		$this->messageId   = $messageId;
 		$this->queueName   = $queueName;
 		$this->content     = $content;
+		$this->ttl         = $ttl;
 		$this->messageType = new MessageType( MessageType::MESSAGE_SERVER_TO_CLIENT );
 	}
 
@@ -64,19 +68,27 @@ final class MessageServerToClient implements ProvidesMessageData
 		return $this->content;
 	}
 
+	public function getTTL() : int
+	{
+		return $this->ttl;
+	}
+
 	public function toString() : string
 	{
 		$messageHeader         = new MessageHeader( ProtocolVersion::VERSION_1, $this->messageType );
-		$queuePacketHeader     = new PacketHeader( PacketType::QUEUE_NAME, strlen( $this->queueName->toString() ) );
-		$contentPacketHeader   = new PacketHeader( PacketType::MESSAGE_CONTENT, strlen( $this->content ) );
-		$messageIdPacketHeader = new PacketHeader( PacketType::MESSAGE_ID, strlen( $this->messageId->toString() ) );
+		$queuePacketHeader     = new PacketHeader( PacketType::QUEUE_NAME, \strlen( $this->queueName->toString() ) );
+		$contentPacketHeader   = new PacketHeader( PacketType::MESSAGE_CONTENT, \strlen( $this->content ) );
+		$messageIdPacketHeader = new PacketHeader( PacketType::MESSAGE_ID, \strlen( $this->messageId->toString() ) );
+		$ttlPacketHeader       = new PacketHeader( PacketType::TTL, \strlen( (string)$this->ttl ) );
 
-		return $messageHeader
-		       . $queuePacketHeader
-		       . $this->queueName
-		       . $contentPacketHeader
-		       . $this->content
-		       . $messageIdPacketHeader
-		       . $this->messageId;
+		return $messageHeader->toString()
+			   . $queuePacketHeader->toString()
+			   . $this->queueName->toString()
+			   . $contentPacketHeader->toString()
+			   . $this->content
+			   . $messageIdPacketHeader->toString()
+			   . $this->messageId->toString()
+			   . $ttlPacketHeader->toString()
+			   . $this->ttl;
 	}
 }
