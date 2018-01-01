@@ -18,4 +18,6 @@ abstract class PacketType
 	public const MESSAGE_ID            = 3;
 
 	public const MESSAGE_CONSUME_COUNT = 4;
+
+	public const TTL                   = 5;
 }
