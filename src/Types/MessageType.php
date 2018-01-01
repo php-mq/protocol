@@ -21,11 +21,17 @@ final class MessageType implements IdentifiesMessageType
 
 	public const  ACKNOWLEDGEMENT          = 4;
 
+	public const  REQUEUE                  = 5;
+
+	public const  DEAD_LETTER              = 6;
+
 	private const PACKET_COUNT_MAP         = [
-		self::MESSAGE_CLIENT_TO_SERVER => 2,
+		self::MESSAGE_CLIENT_TO_SERVER => 3,
 		self::CONSUME_REQUEST          => 2,
-		self::MESSAGE_SERVER_TO_CLIENT => 3,
+		self::MESSAGE_SERVER_TO_CLIENT => 4,
 		self::ACKNOWLEDGEMENT          => 2,
+		self::REQUEUE                  => 3,
+		self::DEAD_LETTER              => 2,
 	];
 
 	/** @var int */
