@@ -47,6 +47,8 @@ So a header always has a length of 8 byte.
 * `002` - Client wants to consume messages (consume request)
 * `003` - Server dispatches a message (server to client)
 * `004` - Client acknowledges a message (acknowledgement)
+* `005` - Client wants to re-queue a message (pop from queue, append to queue)
+* `006` - Client sends a dead letter for a message (remove message from queue)
 
 ## Packet headers
 
@@ -81,6 +83,7 @@ So a package header always has a length of 32 byte.
 | 02       |Message content                     |
 | 03       |Message ID                          |
 | 04       |Count of message for consumption    |
+| 05       |Time to live of message (TTL)       |
 
 ---
 
@@ -88,12 +91,14 @@ So a package header always has a length of 32 byte.
 
 * `01` - Queue name
 * `02` - Message content
+* `05` - Message TTL
 
 ### For messages from endpoint to client
 
 * `01` - Queue name
 * `02` - Message content
 * `03` - Message ID
+* `05` - Message TTL
 
 ### For Consumption
 
@@ -105,7 +110,13 @@ So a package header always has a length of 32 byte.
 * `01` - Queue name
 * `03` - Message ID
 
-### For message receipt
+### For message re-queue
+
+* `01` - Queue name
+* `03` - Message ID
+* `05` - Message TTL
+
+### For dead letter
 
 * `01` - Queue name
 * `03` - Message ID
@@ -116,14 +127,16 @@ So a package header always has a length of 32 byte.
 
 ### Send a message
 
-Client sends "Hello World" for queue "Foo" to server.
+Client sends a new message with content "Hello World" for queue "Foo" to server with a TTL of 3600 seconds.
 
 ```
-H0100102
+H0100103
 P0100000000000000000000000000003
 Foo
 P0200000000000000000000000000011
 Hello World
+P0500000000000000000000000000004
+3600
 ```
 
 ### Consume messages
@@ -140,17 +153,21 @@ P0400000000000000000000000000001
 
 ### Dispatch a message
 
-Server sends the message above to the client.
+Server sends the message above to the client 300 seconds later.
 
 ```
-H0100303
+H0100304
 P0100000000000000000000000000003
 Foo
 P0200000000000000000000000000011
 Hello World
 P0300000000000000000000000000032
 d7e7f68761d34838494b233148b5486c
+P0500000000000000000000000000004
+3300
 ```
+
+**Note:** TTL was reduced to 3300 seconds.
 
 ### Acknowledge a message
 
@@ -158,6 +175,32 @@ Client acknowledges the consumed message with ID `d7e7f68761d34838494b233148b548
 
 ```
 H0100402
+P0100000000000000000000000000003
+Foo
+P0300000000000000000000000000032
+d7e7f68761d34838494b233148b5486c
+```
+
+### Re-queue a message
+
+Client wants the message to be re-queued at the end of the queue, with a new TTL of 3600 seconds.
+
+```
+H0100503
+P0100000000000000000000000000003
+Foo
+P0300000000000000000000000000032
+d7e7f68761d34838494b233148b5486c
+P0500000000000000000000000000004
+3600
+```
+
+### Send a dead letter
+
+Client wants the message to be removed from queue, regardless its TTL
+
+```
+H0100602
 P0100000000000000000000000000003
 Foo
 P0300000000000000000000000000032
