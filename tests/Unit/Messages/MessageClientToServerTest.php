@@ -22,16 +22,19 @@ final class MessageClientToServerTest extends TestCase
 	/**
 	 * @param string $queueName
 	 * @param string $content
+	 * @param int    $ttl
 	 * @param string $expectedMessage
 	 *
+	 * @throws \PHPUnit\Framework\Exception
 	 * @dataProvider queueNameContentProvider
 	 */
-	public function testCanGetEncodedMessage( string $queueName, string $content, string $expectedMessage ) : void
+	public function testCanGetEncodedMessage( string $queueName, string $content, int $ttl, string $expectedMessage ) : void
 	{
-		$messageClientToServer = new MessageClientToServer( $this->getQueueName( $queueName ), $content );
+		$messageClientToServer = new MessageClientToServer( $this->getQueueName( $queueName ), $content, $ttl );
 
-		$this->assertSame( $queueName, (string)$messageClientToServer->getQueueName() );
+		$this->assertSame( $queueName, $messageClientToServer->getQueueName()->toString() );
 		$this->assertSame( $content, $messageClientToServer->getContent() );
+		$this->assertSame( $ttl, $messageClientToServer->getTTL() );
 		$this->assertSame( $expectedMessage, (string)$messageClientToServer );
 		$this->assertSame( $expectedMessage, $messageClientToServer->toString() );
 		$this->assertInstanceOf( IdentifiesMessageType::class, $messageClientToServer->getMessageType() );
@@ -39,6 +42,10 @@ final class MessageClientToServerTest extends TestCase
 		$this->assertSame( '"' . $expectedMessage . '"', json_encode( $messageClientToServer ) );
 	}
 
+	/**
+	 * @return array
+	 * @throws \Exception
+	 */
 	public function queueNameContentProvider() : array
 	{
 		$randomContent = bin2hex( random_bytes( 256 ) );
@@ -47,20 +54,26 @@ final class MessageClientToServerTest extends TestCase
 			[
 				'queueName'       => 'Foo',
 				'content'         => 'Hello World',
-				'expectedMessage' => 'H0100102'
-				                     . 'P0100000000000000000000000000003'
-				                     . 'Foo'
-				                     . 'P0200000000000000000000000000011'
-				                     . 'Hello World',
+				'ttl'             => 0,
+				'expectedMessage' => 'H0100103'
+									 . 'P0100000000000000000000000000003'
+									 . 'Foo'
+									 . 'P0200000000000000000000000000011'
+									 . 'Hello World'
+									 . 'P0500000000000000000000000000001'
+									 . '0',
 			],
 			[
 				'queueName'       => 'Foo',
 				'content'         => $randomContent,
-				'expectedMessage' => 'H0100102'
-				                     . 'P0100000000000000000000000000003'
-				                     . 'Foo'
-				                     . 'P0200000000000000000000000000512'
-				                     . $randomContent,
+				'ttl'             => 3600,
+				'expectedMessage' => 'H0100103'
+									 . 'P0100000000000000000000000000003'
+									 . 'Foo'
+									 . 'P0200000000000000000000000000512'
+									 . $randomContent
+									 . 'P0500000000000000000000000000004'
+									 . '3600',
 			],
 		];
 	}

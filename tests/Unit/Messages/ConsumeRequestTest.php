@@ -25,12 +25,13 @@ final class ConsumeRequestTest extends TestCase
 	 * @param string $expectedMessage
 	 *
 	 * @dataProvider queueNameMessageCountProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanGetEncodedMessage( string $queueName, int $messageCount, string $expectedMessage ) : void
 	{
 		$consumeRequest = new ConsumeRequest( $this->getQueueName( $queueName ), $messageCount );
 
-		$this->assertSame( $queueName, (string)$consumeRequest->getQueueName() );
+		$this->assertSame( $queueName, $consumeRequest->getQueueName()->toString() );
 		$this->assertSame( $messageCount, $consumeRequest->getMessageCount() );
 		$this->assertSame( $expectedMessage, (string)$consumeRequest );
 		$this->assertSame( $expectedMessage, $consumeRequest->toString() );

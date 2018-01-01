@@ -27,6 +27,7 @@ final class AcknowledgementTest extends TestCase
 	 * @param string $expectedMessage
 	 *
 	 * @dataProvider queueNameMessageIdProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanEncodeMessage( string $queueName, string $messageId, string $expectedMessage ) : void
 	{

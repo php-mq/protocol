@@ -19,23 +19,24 @@ final class PacketHeaderTest extends TestCase
 	/**
 	 * @param int    $packetType
 	 * @param int    $contentLength
-	 * @param string $expextedHeader
+	 * @param string $expectedHeader
 	 *
 	 * @dataProvider packageTypeContentLengthProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanConvertPacketHeaderToString(
 		int $packetType,
 		int $contentLength,
-		string $expextedHeader
+		string $expectedHeader
 	) : void
 	{
 		$packetHeader = new PacketHeader( $packetType, $contentLength );
 
 		$this->assertSame( $packetType, $packetHeader->getPacketType() );
 		$this->assertSame( $contentLength, $packetHeader->getContentLength() );
-		$this->assertSame( $expextedHeader, (string)$packetHeader );
-		$this->assertSame( $expextedHeader, $packetHeader->toString() );
-		$this->assertSame( 32, strlen( $packetHeader->toString() ) );
+		$this->assertSame( $expectedHeader, (string)$packetHeader );
+		$this->assertSame( $expectedHeader, $packetHeader->toString() );
+		$this->assertSame( 32, \strlen( $packetHeader->toString() ) );
 		$this->assertInstanceOf( DefinesPacket::class, $packetHeader );
 	}
 
@@ -62,6 +63,11 @@ final class PacketHeaderTest extends TestCase
 				'contentLength'  => 1,
 				'expectedHeader' => 'P0400000000000000000000000000001',
 			],
+			[
+				'packetType'     => PacketType::TTL,
+				'contentLength'  => 1,
+				'expectedHeader' => 'P0500000000000000000000000000001',
+			],
 		];
 	}
 
@@ -71,6 +77,7 @@ final class PacketHeaderTest extends TestCase
 	 * @param int    $expectedContentLength
 	 *
 	 * @dataProvider stringProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanGetPacketHeaderFromString(
 		string $string,
@@ -107,6 +114,11 @@ final class PacketHeaderTest extends TestCase
 				'string'                => 'P0400000000000000000000000000001',
 				'expectedPacketType'    => PacketType::MESSAGE_CONSUME_COUNT,
 				'expectedContentLength' => 1,
+			],
+			[
+				'string'                => 'P0500000000000000000000000000004',
+				'expectedPacketType'    => PacketType::TTL,
+				'expectedContentLength' => 4,
 			],
 		];
 	}

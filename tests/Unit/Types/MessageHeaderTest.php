@@ -24,6 +24,7 @@ final class MessageHeaderTest extends TestCase
 	 * @param string                $expectedPacket
 	 *
 	 * @dataProvider messageTypeProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanConvertMessageHeaderToString(
 		int $version,
@@ -33,8 +34,8 @@ final class MessageHeaderTest extends TestCase
 	{
 		$messageHeader = new MessageHeader( $version, $messageType );
 
-		$this->assertSame( 8, strlen( (string)$messageHeader ) );
-		$this->assertSame( 8, strlen( $messageHeader->toString() ) );
+		$this->assertSame( 8, \strlen( (string)$messageHeader ) );
+		$this->assertSame( 8, \strlen( $messageHeader->toString() ) );
 		$this->assertSame( $expectedPacket, $messageHeader->toString() );
 		$this->assertInstanceOf( DefinesMessage::class, $messageHeader );
 	}
@@ -45,7 +46,7 @@ final class MessageHeaderTest extends TestCase
 			[
 				'version'        => ProtocolVersion::VERSION_1,
 				'messageType'    => new MessageType( MessageType::MESSAGE_CLIENT_TO_SERVER ),
-				'expectedPacket' => 'H0100102',
+				'expectedPacket' => 'H0100103',
 			],
 			[
 				'version'        => ProtocolVersion::VERSION_1,
@@ -55,12 +56,22 @@ final class MessageHeaderTest extends TestCase
 			[
 				'version'        => ProtocolVersion::VERSION_1,
 				'messageType'    => new MessageType( MessageType::MESSAGE_SERVER_TO_CLIENT ),
-				'expectedPacket' => 'H0100303',
+				'expectedPacket' => 'H0100304',
 			],
 			[
 				'version'        => ProtocolVersion::VERSION_1,
 				'messageType'    => new MessageType( MessageType::ACKNOWLEDGEMENT ),
 				'expectedPacket' => 'H0100402',
+			],
+			[
+				'version'        => ProtocolVersion::VERSION_1,
+				'messageType'    => new MessageType( MessageType::REQUEUE ),
+				'expectedPacket' => 'H0100503',
+			],
+			[
+				'version'        => ProtocolVersion::VERSION_1,
+				'messageType'    => new MessageType( MessageType::DEAD_LETTER ),
+				'expectedPacket' => 'H0100602',
 			],
 		];
 	}
@@ -71,6 +82,7 @@ final class MessageHeaderTest extends TestCase
 	 * @param IdentifiesMessageType $expectedMessageType
 	 *
 	 * @dataProvider stringProvider
+	 * @throws \PHPUnit\Framework\Exception
 	 */
 	public function testCanGetMessageHeaderFromString(
 		string $string,
@@ -91,24 +103,34 @@ final class MessageHeaderTest extends TestCase
 	{
 		return [
 			[
-				'string'              => 'H0100102',
+				'string'              => 'H0100103',
 				'expectedVersion'     => ProtocolVersion::VERSION_1,
-				'expetcedMessageType' => new MessageType( MessageType::MESSAGE_CLIENT_TO_SERVER ),
+				'expectedMessageType' => new MessageType( MessageType::MESSAGE_CLIENT_TO_SERVER ),
 			],
 			[
 				'string'              => 'H0100202',
 				'expectedVersion'     => ProtocolVersion::VERSION_1,
-				'expetcedMessageType' => new MessageType( MessageType::CONSUME_REQUEST ),
+				'expectedMessageType' => new MessageType( MessageType::CONSUME_REQUEST ),
 			],
 			[
-				'string'              => 'H0100303',
+				'string'              => 'H0100304',
 				'expectedVersion'     => ProtocolVersion::VERSION_1,
-				'expetcedMessageType' => new MessageType( MessageType::MESSAGE_SERVER_TO_CLIENT ),
+				'expectedMessageType' => new MessageType( MessageType::MESSAGE_SERVER_TO_CLIENT ),
 			],
 			[
 				'string'              => 'H0100402',
 				'expectedVersion'     => ProtocolVersion::VERSION_1,
-				'expetcedMessageType' => new MessageType( MessageType::ACKNOWLEDGEMENT ),
+				'expectedMessageType' => new MessageType( MessageType::ACKNOWLEDGEMENT ),
+			],
+			[
+				'string'              => 'H0100503',
+				'expectedVersion'     => ProtocolVersion::VERSION_1,
+				'expectedMessageType' => new MessageType( MessageType::REQUEUE ),
+			],
+			[
+				'string'              => 'H0100602',
+				'expectedVersion'     => ProtocolVersion::VERSION_1,
+				'expectedMessageType' => new MessageType( MessageType::DEAD_LETTER ),
 			],
 		];
 	}

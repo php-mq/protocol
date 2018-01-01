@@ -25,26 +25,31 @@ final class MessageServerToClientTest extends TestCase
 	 * @param string $messageId
 	 * @param string $queueName
 	 * @param string $content
+	 * @param int    $ttl
 	 * @param string $expectedMessage
 	 *
+	 * @throws \PHPUnit\Framework\Exception
 	 * @dataProvider messageIdQueueNameContentProvider
 	 */
 	public function testCanEncodeMessage(
 		string $messageId,
 		string $queueName,
 		string $content,
+		int $ttl,
 		string $expectedMessage
 	) : void
 	{
 		$messageServerToClient = new MessageServerToClient(
 			$this->getMessageId( $messageId ),
 			$this->getQueueName( $queueName ),
-			$content
+			$content,
+			$ttl
 		);
 
-		$this->assertSame( $messageId, (string)$messageServerToClient->getMessageId() );
-		$this->assertSame( $queueName, (string)$messageServerToClient->getQueueName() );
+		$this->assertSame( $messageId, $messageServerToClient->getMessageId()->toString() );
+		$this->assertSame( $queueName, $messageServerToClient->getQueueName()->toString() );
 		$this->assertSame( $content, $messageServerToClient->getContent() );
+		$this->assertSame( $ttl, $messageServerToClient->getTTL() );
 		$this->assertSame( $expectedMessage, (string)$messageServerToClient );
 		$this->assertSame( $expectedMessage, $messageServerToClient->toString() );
 		$this->assertInstanceOf( IdentifiesMessageType::class, $messageServerToClient->getMessageType() );
@@ -52,6 +57,10 @@ final class MessageServerToClientTest extends TestCase
 		$this->assertSame( '"' . $expectedMessage . '"', json_encode( $messageServerToClient ) );
 	}
 
+	/**
+	 * @return array
+	 * @throws \Exception
+	 */
 	public function messageIdQueueNameContentProvider() : array
 	{
 		$randomContent = bin2hex( random_bytes( 256 ) );
@@ -61,25 +70,31 @@ final class MessageServerToClientTest extends TestCase
 				'messageId'       => 'd7e7f68761d34838494b233148b5486c',
 				'queueName'       => 'Foo',
 				'content'         => 'Hello World',
-				'expectedMessage' => 'H0100303'
-				                     . 'P0100000000000000000000000000003'
-				                     . 'Foo'
-				                     . 'P0200000000000000000000000000011'
-				                     . 'Hello World'
-				                     . 'P0300000000000000000000000000032'
-				                     . 'd7e7f68761d34838494b233148b5486c',
+				'ttl'             => 0,
+				'expectedMessage' => 'H0100304'
+									 . 'P0100000000000000000000000000003'
+									 . 'Foo'
+									 . 'P0200000000000000000000000000011'
+									 . 'Hello World'
+									 . 'P0300000000000000000000000000032'
+									 . 'd7e7f68761d34838494b233148b5486c'
+									 . 'P0500000000000000000000000000001'
+									 . '0',
 			],
 			[
 				'messageId'       => 'd7e7f68761d34838494b233148b5486c',
 				'queueName'       => 'Foo',
 				'content'         => $randomContent,
-				'expectedMessage' => 'H0100303'
-				                     . 'P0100000000000000000000000000003'
-				                     . 'Foo'
-				                     . 'P0200000000000000000000000000512'
-				                     . $randomContent
-				                     . 'P0300000000000000000000000000032'
-				                     . 'd7e7f68761d34838494b233148b5486c',
+				'ttl'             => 3300,
+				'expectedMessage' => 'H0100304'
+									 . 'P0100000000000000000000000000003'
+									 . 'Foo'
+									 . 'P0200000000000000000000000000512'
+									 . $randomContent
+									 . 'P0300000000000000000000000000032'
+									 . 'd7e7f68761d34838494b233148b5486c'
+									 . 'P0500000000000000000000000000004'
+									 . '3300',
 			],
 		];
 	}
